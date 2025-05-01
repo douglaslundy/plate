@@ -7,8 +7,11 @@ from pathlib import Path
 root = Path(__file__).parents[2]
 sys.path.append(str(root))
 
-from backend.controllers.base_plate_recognize import standardize_plate, validate_plate
-from backend.controllers.plate_reconizer import find_plate
+from backend.controllers.base_plate_recognizer import BasePlateRecognizer
+
+class BPR(BasePlateRecognizer):
+    def find_plate(self):
+        pass
 
 
 class TestPlateRecognition(unittest.TestCase):
@@ -49,10 +52,11 @@ class TestPlateRecognition(unittest.TestCase):
         ]
         
         
+        instance = BPR()
       
         for plate, expected in test_cases:
             with self.subTest(plate=plate):
-                self.assertEqual(standardize_plate(plate), expected)
+                self.assertEqual(instance._standardize_plate(plate), expected)
                 
     def test_validate_plate(self):
         
@@ -75,14 +79,16 @@ class TestPlateRecognition(unittest.TestCase):
             "ABC12", "IZ34567", "ABI234", "AIC182", "ACI2D3", 
             "ABID25", "ABA123",
         ]
+        
+        instance = BPR()
 
         for plate in valid_plates:
             with self.subTest(plate=plate):
-                self.assertTrue(validate_plate(plate), msg=f"A Placa {plate} é inválida")
+                self.assertTrue(instance._validate_plate(plate), msg=f"A Placa {plate} é inválida")
                 
         for plate in invalid_plates:
             with self.subTest(plate=plate):
-                self.assertFalse(validate_plate(plate), msg=f"A Placa {plate} foi classificada como válida incorretamente")
+                self.assertFalse(instance._validate_plate(plate), msg=f"A Placa {plate} foi classificada como válida incorretamente")
 
                 
 if __name__ == '__main__':
