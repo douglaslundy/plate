@@ -13,19 +13,32 @@ from backend.controllers.base_plate_recognizer import BasePlateRecognizer
 
 
 class OpenALPRDetector(BasePlateRecognizer):
-    def find_plate(self, image_path):
-        
+    def find_plate(self, image_path):        
+        # comand = [
+        #     "docker",                       # inicia o docker
+        #     "run",                          # executa o container
+        #     "--rm",                         # remove o container após a execução
+        #     "-v",                           # monta o volume do container
+        #     f"{os.getcwd()}:/data:ro",      # mapeia o diretório atual para o diretório /data no container
+        #     "openalpr",                     # imagem do openalpr
+        #     "-c",                           # definir país Brasil
+        #     "br",                           # país Brasil
+        #     "-j",                           # saída em JSON 
+        #     image_path                                        # caminho da imagem
+        # ]
+        image_dir = os.path.abspath(os.path.join(image_path, os.pardir))
+
         comand = [
             "docker",                       # inicia o docker
             "run",                          # executa o container
             "--rm",                         # remove o container após a execução
             "-v",                           # monta o volume do container
-            f"{os.getcwd()}:/data:ro",      # mapeia o diretório atual para o diretório /data no container
+            f"{image_dir}:/data:ro",      # mapeia o diretório atual para o diretório /data no container
             "openalpr",                     # imagem do openalpr
             "-c",                           # definir país Brasil
             "br",                           # país Brasil
             "-j",                           # saída em JSON 
-            image_path                      # caminho da imagem
+            f"/data/{Path(image_path).name}"                                        # caminho da imagem
         ]
         
         res = subprocess.run(comand, capture_output=True, text=True)
@@ -34,8 +47,16 @@ class OpenALPRDetector(BasePlateRecognizer):
             print("Erro ao executar o OpenALPR:", res.stderr)
             return []
         
-        data = json.loads(res.stdout) #carrega o JSON retornado pelo OpenALPR
-        # pprint(data) # imprime o JSON retornado pelo OpenALPR
+        
+        if not res.stdout.strip():
+            return {"error": "Saída vazia do OpenALPR", "details": "Verifique se a imagem está acessível pelo container."}
+
+        try:
+            data = json.loads(res.stdout)
+        except json.JSONDecodeError as e:
+            return {"error": "JSON inválido retornado pelo OpenALPR", "details": str(e)}
+        
+        
         detected_plates = [] # lista para armazenar as placas detectadas
         
         for result in data.get("results", []): # percorre os resultados retornados pelo OpenALPR
