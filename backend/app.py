@@ -8,6 +8,7 @@ from backend.controllers.openalpr_recognizer import OpenALPRDetector
 from backend.controllers.plate_recognizer import PlateRecognizerAPI
 import mimetypes
 import os
+from backend.utils.utils import insert_vehicle
 
 dotenv_path = Path(__file__).parents[1].joinpath('.env').as_posix()
 load_dotenv(dotenv_path=dotenv_path)
@@ -54,7 +55,13 @@ def detect_plate():
     else:   
         return jsonify({"error": "Unsupported file type"}), 400
     
-    return jsonify({'success': results}), 200
+    if results:    
+        for r in results:
+            insert_vehicle(r)
+            
+        return jsonify({'success': results}), 200
+    
+    return jsonify({'error': 'No platres detected'}), 404
 
 if __name__ == '__main__':
     app.run()

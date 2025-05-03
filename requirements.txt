@@ -2,7 +2,7 @@ opencv-python
 requests
 python-dotenv
 flask
-flask_migrate
+flask-migrate
 flask_sqlalchemy
 #python -m venv venv
 # venv\Scripts\activate
