@@ -118,11 +118,13 @@ class OpenALPRDetector(BasePlateRecognizer):
                 # Chama a função find_plate para detectar placas no frame
                 detected_plates = self.find_plate(docker_path)
                 
-                # for d in detected_plates:
-                #     videos_results.append(d)
+                for d in detected_plates:
+                    d['image_path'] = video_path
+                    videos_results.append(d)
                 
                 # Adiciona os resultados à lista de vídeos
-                videos_results.extend(detected_plates)
+                # videos_results.extend([{**d, 'image_path': video_path} for d in detected_plates])
+                # videos_results.extend(detected_plates)
                 
                 # Remove o arquivo temporário
                 os.remove(temp_frame_path)

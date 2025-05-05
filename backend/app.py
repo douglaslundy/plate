@@ -8,7 +8,7 @@ from backend.controllers.openalpr_recognizer import OpenALPRDetector
 from backend.controllers.plate_recognizer import PlateRecognizerAPI
 import mimetypes
 import os
-from backend.utils.utils import insert_vehicle
+from backend.utils.utils import insert_vehicle, get_vehicles
 
 dotenv_path = Path(__file__).parents[1].joinpath('.env').as_posix()
 load_dotenv(dotenv_path=dotenv_path)
@@ -58,10 +58,26 @@ def detect_plate():
     if results:    
         for r in results:
             insert_vehicle(r)
+        
+        res = get_vehicles(file_path)
             
-        return jsonify({'success': results}), 200
+        return jsonify({'success': res}), 200
     
-    return jsonify({'error': 'No platres detected'}), 404
+    return jsonify({'error': 'No plates detected'}), 404
+
+
+#cRud - Read
+
+@app.route('/vehicles', methods=['GET'])
+def list_vehicles():
+    vehicles = VehicleDetected.query.with_entities(VehicleDetected.image_path).distinct().all()
+    vehicles_list = []
+    
+    for vehicle in vehicles:
+        res = get_vehicles(vehicle.image_path)
+        vehicles_list.append(res)        
+    
+    return jsonify(vehicles_list), 200
 
 if __name__ == '__main__':
     app.run()
