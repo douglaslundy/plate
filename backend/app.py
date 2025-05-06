@@ -67,7 +67,6 @@ def detect_plate():
 
 
 #cRud - Read
-
 @app.route('/vehicles', methods=['GET'])
 def list_vehicles():
     vehicles = VehicleDetected.query.with_entities(VehicleDetected.image_path).distinct().all()
@@ -78,6 +77,40 @@ def list_vehicles():
         vehicles_list.append(res)        
     
     return jsonify(vehicles_list), 200
+
+
+#crUd - Update
+@app.route('/vehicles/<int:vehicle_id>', methods=['patch'])
+def update_vehicle(vehicle_id):
+    # vehicle = VehicleDetected.query.get_or_404(vehicle_id)
+    vehicle = VehicleDetected.query.get(vehicle_id)
+    
+    if not vehicle:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    
+    data = request.json
+    
+    for key, value in data.items():
+        if hasattr(vehicle, key):
+            setattr(vehicle, key, value)    
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Vehicle updated successfully'}), 200
+
+
+#crud - Delete
+@app.route('/vehicles/<int:vehicle_id>', methods=['DELETE'])
+def delete_vehicle(vehicle_id):
+    vehicle = VehicleDetected.query.get(vehicle_id)
+    
+    if not vehicle:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    
+    db.session.delete(vehicle)
+    db.session.commit()
+    
+    return jsonify({'message': 'Vehicle deleted successfully'}), 200
 
 if __name__ == '__main__':
     app.run()
